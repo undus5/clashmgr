@@ -66,6 +66,9 @@ head() {
     printf '%s\n' "${line[@]}"
 }
 
+# baseurl="https://github.com"
+baseurl="https://download.fastgit.org"
+
 # script_dir=$(dirname $(realpath $0))
 config_dir=~/.config/clash
 update_dir=${config_dir}/update
@@ -170,14 +173,12 @@ test_clash_update() {
 }
 
 get_clash() {
-    printf "downloading clash ... "
+    printf "downloading clash ... \n"
     archive_name="${process_name}-${latest_version}.gz"
     archive_path=${update_dir}/${archive_name}
-    # url="https://github.com/Dreamacro/clash/releases/download/premium/${archive_name}"
-    url="https://download.fastgit.org/Dreamacro/clash/releases/download/premium/${archive_name}"
+    url="${baseurl}/Dreamacro/clash/releases/download/premium/${archive_name}"
     curl -#SL $url -o $archive_path
     if [[ $? ]]; then
-        printf "success\n"
         printf "unpacking clash ... "
         gzip -dc $archive_path > $program_update_path
         if [[ $? ]]; then
@@ -217,14 +218,12 @@ test_clash_dashboard_update() {
 }
 
 get_clash_dashboard() {
-    printf "downloading clash-dashboard ... "
+    printf "downloading clash-dashboard ... \n"
     suffix="gh-pages"
-    # url="https://github.com/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
-    url="https://download.fastgit.org/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
+    url="${baseurl}/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
     archive_path="${dashboard_update_path}-${suffix}.zip"
     curl -#SL $url -o $archive_path
     if [[ $? ]]; then
-        printf "success\n"
         printf "unpacking clash-dashboard ... "
         unzip -qq $archive_path -d $update_dir
         if [[ $? ]]; then
@@ -264,15 +263,9 @@ test_geoip_update_path() {
 }
 
 get_geoip() {
-    printf "downloading geoip ... "
-    # url="https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
-    url="https://download.fastgit.org/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
+    printf "downloading geoip ... \n"
+    url="${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
     curl -#SL $url -o $geoip_update_path_path
-    if [[ $? ]]; then
-        printf "success\n"
-    else
-        printf "error\n"
-    fi
 }
 
 update_geoip() {

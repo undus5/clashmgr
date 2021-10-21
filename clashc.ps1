@@ -4,6 +4,10 @@ $config_dir_raw = "~\.config\clash"
 if ( !(Test-Path $config_dir_raw) ) {
     New-Item -Path $config_dir_raw -ItemType Directory | Out-Null
 }
+
+# $baseurl = "https://github.com"
+$baseurl = "https://download.fastgit.org"
+
 # $script_dir = $MyInvocation.MyCommand.Path | Split-Path -Parent
 $config_dir = Resolve-Path $config_dir_raw
 $update_dir = "${config_dir}\update"
@@ -115,16 +119,14 @@ function Get-Clash {
         [Parameter(Mandatory,Position=0)] [string] $latest_version
     )
 
-    Write-Host "downloading clash ... " -NoNewline
+    Write-Host "downloading clash ... "
 
     $archive_name = "${process_name}-${latest_version}.zip"
     $archive_path = "${update_dir}\${archive_name}"
-    # $url = "https://github.com/Dreamacro/clash/releases/download/premium/${archive_name}"
-    $url = "https://download.fastgit.org/Dreamacro/clash/releases/download/premium/${archive_name}"
+    $url = "${baseurl}/Dreamacro/clash/releases/download/premium/${archive_name}"
     curl -#SL $url -o $archive_path
 
     if ($?) {
-        Write-Host "success"
         Write-Host "unpacking clash ... " -NoNewline
         Expand-Archive -Path $archive_path -DestinationPath $update_dir
         if ($?) {
@@ -160,14 +162,12 @@ function Test-Clash-Dashboard-Update {
 }
 
 function Get-Clash-Dashboard {
-    Write-Host "downloading clash-dashboard ... " -NoNewline
+    Write-Host "downloading clash-dashboard ... "
     $suffix = "gh-pages"
-    # $url = "https://github.com/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
-    $url = "https://download.fastgit.org/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
+    $url = "${baseurl}/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
     $archive_path = "${dashboard_update_path}-${suffix}.zip"
     curl -#SL $url -o $archive_path
     if ($?) {
-        Write-Host "success"
         Write-Host "unpacking clash-dashboard ... " -NoNewline
         Expand-Archive -Path $archive_path -DestinationPath $update_dir
         if ($?) {
@@ -205,15 +205,9 @@ function Test-Geoip-Update {
 }
 
 function Get-Geoip {
-    Write-Host "downloading geoip ... " -NoNewline
-    # $url = "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
-    $url = "https://download.fastgit.org/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
+    Write-Host "downloading geoip ... "
+    $url = "${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
     curl -#SL $url -o $geoip_update_path
-    if ($?) {
-        Write-Host "success"
-    } else {
-        Write-Host "error"
-    }
 }
 
 function Update-Geoip {
