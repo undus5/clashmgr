@@ -316,6 +316,6 @@ switch ($args[0]) {
         Get-Config $args[1]
     }
     default {
-        Write-Host "usage: clashc start|stop|update|set file.yaml|get file.txt"
+        Write-Host "usage: clashc start|stop|update|set|get"
     }
 }

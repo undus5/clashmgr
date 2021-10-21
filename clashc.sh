@@ -380,6 +380,6 @@ case $1 in
         get_config $2
     ;;
     *)
-        echo "usage: clashc start|stop|update|set file.yaml|get file.txt"
+        echo "usage: clashc start|stop|update|set|get"
     ;;
 esac
