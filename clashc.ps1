@@ -1,6 +1,6 @@
 # powershell
 
-$config_dir_raw = "~\.config\clash"
+$config_dir_raw = "~\.config\clashc"
 if ( !(Test-Path $config_dir_raw) ) {
     New-Item -Path $config_dir_raw -ItemType Directory | Out-Null
 }
@@ -12,6 +12,22 @@ $baseurl = "https://download.fastgit.org"
 $config_dir = Resolve-Path $config_dir_raw
 $update_dir = "${config_dir}\update"
 
+$process_name = "clash-windows-amd64"
+
+$program_path = "${config_dir}\${process_name}.exe"
+$program_update_path = "${update_dir}\${process_name}.exe"
+
+# $dashboard_name = "clash-dashboard"
+# $dashboard_repo = "Dreamacro/clash-dashboard"
+$dashboard_name = "yacd"
+$dashboard_repo = "haishanh/yacd"
+$dashboard_path = "${config_dir}\${dashboard_name}"
+$dashboard_update_path = "${update_dir}\${dashboard_name}"
+
+$geoip_name = "Country.mmdb"
+$geoip_path = "${config_dir}\${geoip_name}"
+$geoip_update_path = "${update_dir}\${geoip_name}"
+
 if (Test-Path $update_dir) {
     Remove-Item -Recurse $update_dir
 }
@@ -21,21 +37,8 @@ $config_path = "${config_dir}\config.yaml"
 if ( !(Test-Path $config_path) ) {
     "mixed-port: 7890" >> $config_path
     "external-controller: 127.0.0.1:9090" >> $config_path
-    "external-ui: clash-dashboard" >> $config_path
+    "external-ui: ${dashboard_name}" >> $config_path
 }
-
-$process_name = "clash-windows-amd64"
-
-$program_path = "${config_dir}\${process_name}.exe"
-$program_update_path = "${update_dir}\${process_name}.exe"
-
-$dashboard_name = "clash-dashboard"
-$dashboard_path = "${config_dir}\${dashboard_name}"
-$dashboard_update_path = "${update_dir}\${dashboard_name}"
-
-$geoip_name = "Country.mmdb"
-$geoip_path = "${config_dir}\${geoip_name}"
-$geoip_update_path = "${update_dir}\${geoip_name}"
 
 function Start-Clash {
     Get-Process -Name $process_name > $null 2>&1
@@ -150,7 +153,7 @@ function Update-Clash {
     }
 }
 
-function Test-Clash-Dashboard-Update {
+function Test-Dashboard-Update {
     if ( !(Test-Path $dashboard_path) ) {
         Return $true
     }
@@ -161,14 +164,14 @@ function Test-Clash-Dashboard-Update {
     return $lt
 }
 
-function Get-Clash-Dashboard {
-    Write-Host "downloading clash-dashboard ... "
+function Get-Dashboard {
+    Write-Host "downloading dashboard ... "
     $suffix = "gh-pages"
-    $url = "${baseurl}/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
+    $url = "${baseurl}/${dashboard_repo}/archive/refs/heads/${suffix}.zip"
     $archive_path = "${dashboard_update_path}-${suffix}.zip"
     curl -#SL $url -o $archive_path
     if ($?) {
-        Write-Host "unpacking clash-dashboard ... " -NoNewline
+        Write-Host "unpacking dashboard ... " -NoNewline
         Expand-Archive -Path $archive_path -DestinationPath $update_dir
         if ($?) {
             Move-Item "${dashboard_update_path}-${suffix}" $dashboard_update_path
@@ -183,9 +186,9 @@ function Get-Clash-Dashboard {
     }
 }
 
-function Update-Clash-Dashboard {
+function Update-Dashboard {
     if (Test-Path $dashboard_update_path) {
-        Write-Host "updating clash-dashboard ... " -NoNewline
+        Write-Host "updating dashboard ... " -NoNewline
         Move-Item $dashboard_update_path $config_dir -Force
         if ($?) {
             Write-Host "success"
@@ -234,9 +237,9 @@ function Update {
         Write-Host "already up to date"
     }
 
-    Write-Host "checking clash-dashboard update ... " -NoNewline
-    if (Test-Clash-Dashboard-Update) {
-        Get-Clash-Dashboard
+    Write-Host "checking dashboard update ... " -NoNewline
+    if (Test-Dashboard-Update) {
+        Get-Dashboard
     } else {
         Write-Host "already up to date"
     }
@@ -251,7 +254,7 @@ function Update {
     if (Test-Downloaded-Update) {
         Stop-Clash
         Update-Clash
-        Update-Clash-Dashboard
+        Update-Dashboard
         Update-Geoip
     }
 }
