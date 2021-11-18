@@ -56,6 +56,33 @@ function Stop-Clash {
     }
 }
 
+function Get-External-Controller {
+    $pattern = "external-controller:"
+    $external_controller_raw = $(Get-Content "${config_dir}\config.yaml" | Select-String $pattern) -replace $pattern, ""
+    if ($external_controller_raw.Length -gt 0) {
+        Return $external_controller_raw.Trim()
+    } else {
+        Return $false
+    }
+}
+
+function Get-Status {
+    Get-Process -Name $process_name > $null 2>&1
+    if (!$?) {
+        Write-Host "clash not running"
+        Break
+    }
+
+    $external_controller = Get-External-Controller
+    if (!$external_controller) {
+        Write-Host "no 'external-controller' attribute in ${config_dir}\config.yaml"
+        Break
+    }
+
+    $url = "${external_controller}/configs"
+    curl -sSL $url | ConvertFrom-Json
+}
+
 function Set-Config {
     Param(
         [Parameter(Position=0)] [string] $path
@@ -67,11 +94,8 @@ function Set-Config {
         Break
     }
 
-    $pattern = "external-controller:"
-    $external_controller_raw = $(Get-Content "${config_dir}\config.yaml" | Select-String $pattern) -replace $pattern, ""
-    if ($external_controller_raw.Length -gt 0) {
-        $external_controller = $external_controller_raw.Trim()
-    } else {
+    $external_controller = Get-External-Controller
+    if (!$external_controller) {
         Write-Host "no 'external-controller' attribute in ${config_dir}\config.yaml"
         Break
     }
@@ -90,7 +114,8 @@ function Set-Config {
 
     $data = "{`"`"`"path`"`"`":`"`"$($config_path | ConvertTo-Json)`"`"}"
     $header = "Content-Type: application/json"
-    $status=$(curl -sSL -X PUT "${external_controller}/configs" -H $header --data-raw $data -w "%{http_code}")
+    $url = "${external_controller}/configs"
+    $status=$(curl -sSL -X PUT $url -H $header --data-raw $data -w "%{http_code}")
 
     if ( $? -and ($status -eq 204) ) {
         Write-Host "success"
@@ -302,6 +327,9 @@ switch ($args[0]) {
     }
     "stop" {
         Stop-Clash
+    }
+    "status" {
+        Get-Status
     }
     "set" {
         Set-Config $args[1]
