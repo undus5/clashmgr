@@ -103,9 +103,9 @@ if [[ ! -f $config_path ]]; then
 fi
 
 get_help() {
-    echo "Clash command-line management tool\n"
-    echo "Syntax: clashc [start|stop|status|update|set|get]"
-    echo "Options:"
+    printf "Clash command-line management tool\n\n"
+    printf "Syntax: clashc [start|stop|status|update|set|get]\n"
+    printf "Options:\n"
     printf "%3s %-20s %s\n" "" "start" "start clash service"
     printf "%3s %-20s %s\n" "" "stop" "stop clash service"
     printf "%3s %-20s %s\n" "" "status" "check clash service status"
