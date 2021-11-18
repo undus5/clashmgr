@@ -118,13 +118,7 @@ stop_clash() {
     fi
 }
 
-set_config() {
-    pid=$(pidof $process_name)
-    if [ -z $pid ]; then
-        echo "clash not running"
-        return 1
-    fi
-
+get_external_controller() {
     pattern="external-controller:"
     while IFS= read line || [ -n "$line" ]; do
         line=$(strip_all "$line" "[[:space:]]")
@@ -132,6 +126,41 @@ set_config() {
             external_controller=$(lstrip "$line" "$pattern")
         fi
     done < ${config_dir}/config.yaml
+
+    if [[ -n $external_controller ]]; then
+        echo $external_controller
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_status() {
+    pid=$(pidof $process_name)
+    if [ -z $pid ]; then
+        echo "clash not running"
+        return 1
+    fi
+
+    external_controller=$(get_external_controller)
+
+    if [[ -z $external_controller ]]; then
+        echo "no 'external-controller' attribute in ${config_dir}/config.yaml"
+        return 1
+    fi
+
+    url="${external_controller}/configs"
+    curl -sSL $url | jq
+}
+
+set_config() {
+    pid=$(pidof $process_name)
+    if [ -z $pid ]; then
+        echo "clash not running"
+        return 1
+    fi
+
+    external_controller=$(get_external_controller)
 
     if [[ -z $external_controller ]]; then
         echo "no 'external-controller' attribute in ${config_dir}/config.yaml"
@@ -151,7 +180,8 @@ set_config() {
     printf "setting ${config_path} ... "
     data="{\"path\":\"${config_path}\"}"
     header="Content-Type:application/json"
-    status=$(curl -sSL -X PUT ${external_controller}/configs -H $header --data-raw $data -w "%{http_code}")
+    url="${external_controller}/configs"
+    status=$(curl -sSL -X PUT $url -H $header --data-raw $data -w "%{http_code}")
 
     if [[ $? && $status == "204" ]]; then
         printf "success\n"
@@ -365,6 +395,9 @@ case $1 in
     ;;
     "stop")
         stop_clash
+    ;;
+    "status")
+        get_status
     ;;
     "set")
         set_config $2
