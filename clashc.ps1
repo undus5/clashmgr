@@ -48,8 +48,8 @@ function Get-Help {
     "{0, 3} {1, -20} {2}" -f "", "stop", "stop clash service"
     "{0, 3} {1, -20} {2}" -f "", "status", "check clash service status"
     "{0, 3} {1, -20} {2}" -f "", "update", "update clash, dashboard, geoip database"
-    "{0, 3} {1, -20} {2}" -f "", "set example.yaml", "apply config file to clash service"
-    "{0, 3} {1, -20} {2}" -f "", "get example.txt", "update config subscription"
+    "{0, 3} {1, -20} {2}" -f "", "set [example.yaml]", "apply config file to clash service"
+    "{0, 3} {1, -20} {2}" -f "", "get [example.txt]", "update config subscription"
     "{0, 3} {1, -20} {2}" -f "", "", "the content of example.txt is your subscription url"
 }
 

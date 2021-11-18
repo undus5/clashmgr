@@ -110,8 +110,8 @@ get_help() {
     printf "%3s %-20s %s\n" "" "stop" "stop clash service"
     printf "%3s %-20s %s\n" "" "status" "check clash service status"
     printf "%3s %-20s %s\n" "" "update" "update clash, dashboard, geoip database"
-    printf "%3s %-20s %s\n" "" "set example.yaml" "apply config file to clash service"
-    printf "%3s %-20s %s\n" "" "get example.txt" "update config subscription"
+    printf "%3s %-20s %s\n" "" "set [example.yaml]" "apply config file to clash service"
+    printf "%3s %-20s %s\n" "" "get [example.txt]" "update config subscription"
     printf "%3s %-20s %s\n" "" "" "the content of example.txt is your subscription url"
 }
 
