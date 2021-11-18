@@ -102,6 +102,19 @@ if [[ ! -f $config_path ]]; then
     echo "external-ui: ${dashboard_name}" >> $config_path
 fi
 
+get_help() {
+    echo "Clash command-line management tool\n"
+    echo "Syntax: clashc [start|stop|status|update|set|get]"
+    echo "Options:"
+    printf "\t%-32s %s\n" "start" "start clash service"
+    printf "\t%-32s %s\n" "stop" "stop clash service"
+    printf "\t%-32s %s\n" "status" "check clash service status"
+    printf "\t%-32s %s\n" "update" "update clash, dashboard, geoip database"
+    printf "\t%-32s %s\n" "set example.yaml" "apply config file to clash service"
+    printf "\t%-32s %s\n" "get example.txt" "update config subscription"
+    printf "\t%-32s %s\n" "" "the content of example.txt is your subscription url"
+}
+
 start_clash() {
     pid=$(pidof $process_name)
     if [ -z $pid ]; then
@@ -168,7 +181,7 @@ set_config() {
     fi
 
     if [[ -z $1 ]]; then
-        echo "usage: clashc set file.yaml"
+        get_help
         return 1
     fi
     if [[ ! -f $1 ]]; then
@@ -359,7 +372,7 @@ update() {
 
 get_config() {
     if [[ -z $1 ]]; then
-        echo "usage: clashc get file.txt"
+        get_help
         return 1
     fi
     if [[ ! -f $1 ]]; then
@@ -409,6 +422,6 @@ case $1 in
         get_config $2
     ;;
     *)
-        echo "usage: clashc start|stop|update|set|get"
+        get_help
     ;;
 esac
