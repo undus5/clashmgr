@@ -40,6 +40,19 @@ if ( !(Test-Path $config_path) ) {
     "external-ui: ${dashboard_name}" >> $config_path
 }
 
+function Get-Help {
+    "Clash command-line management tool`n"
+    "Syntax: clashc [start|stop|status|update|set|get]"
+    "Options:"
+    "{0, -16}`t{1}" -f "start", "start clash service"
+    "{0, -16}`t{1}" -f "stop", "stop clash service"
+    "{0, -16}`t{1}" -f "status", "check clash service status"
+    "{0, -16}`t{1}" -f "update", "update clash, dashboard, geoip database"
+    "{0, -16}`t{1}" -f "set example.yaml", "apply config file to clash service"
+    "{0, -16}`t{1}" -f "get example.txt", "update config subscription"
+    "{0, -16}`t{1}" -f "", "the content of example.txt is your subscription url"
+}
+
 function Start-Clash {
     Get-Process -Name $process_name > $null 2>&1
     if ($?) {
@@ -101,7 +114,7 @@ function Set-Config {
     }
 
     if ( !($path.Length -gt 0) ) {
-        Write-Host "usage: clashc set file.yaml"
+        Get-Help
         Break
     }
     if ( !(Test-Path $path) ) {
@@ -294,7 +307,7 @@ function Get-Config {
         [Parameter(Position=0)] [string] $path
     )
     if ( !($path.Length -gt 0) ) {
-        Write-Host "usage: clashc get file.txt"
+        Get-Help
         Break
     }
     if ( !(Test-Path $path) ) {
@@ -341,6 +354,6 @@ switch ($args[0]) {
         Get-Config $args[1]
     }
     default {
-        Write-Host "usage: clashc start|stop|update|set|get"
+        Get-Help
     }
 }
