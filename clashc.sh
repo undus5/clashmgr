@@ -70,8 +70,24 @@ head() {
 baseurl="https://download.fastgit.org"
 
 # script_dir=$(dirname $(realpath $0))
-config_dir=~/.config/clash
+config_dir=~/.config/clashc
 update_dir=${config_dir}/update
+
+process_name="clash-linux-amd64"
+
+program_path=${config_dir}/${process_name}
+program_update_path=${update_dir}/${process_name}
+
+# dashboard_name="clash-dashboard"
+# dashboard_repo="Dreamacro/clash-dashboard"
+dashboard_name="yacd"
+dashboard_repo="haishanh/yacd"
+dashboard_path=${config_dir}/${dashboard_name}
+dashboard_update_path=${update_dir}/${dashboard_name}
+
+geoip_name="Country.mmdb"
+geoip_path=${config_dir}/${geoip_name}
+geoip_update_path_path=${update_dir}/${geoip_name}
 
 if [[ -d $update_dir ]]; then
     rm -rf $update_dir
@@ -83,21 +99,8 @@ config_path=${config_dir}/config.yaml
 if [[ ! -f $config_path ]]; then
     echo "mixed-port: 7890" >> $config_path
     echo "external-controller: 127.0.0.1:9090" >> $config_path
-    echo "external-ui: clash-dashboard" >> $config_path
+    echo "external-ui: ${dashboard_name}" >> $config_path
 fi
-
-process_name="clash-linux-amd64"
-
-program_path=${config_dir}/${process_name}
-program_update_path=${update_dir}/${process_name}
-
-dashboard_name="clash-dashboard"
-dashboard_path=${config_dir}/${dashboard_name}
-dashboard_update_path=${update_dir}/${dashboard_name}
-
-geoip_name="Country.mmdb"
-geoip_path=${config_dir}/${geoip_name}
-geoip_update_path_path=${update_dir}/${geoip_name}
 
 start_clash() {
     pid=$(pidof $process_name)
@@ -203,7 +206,7 @@ update_clash() {
     fi
 }
 
-test_clash_dashboard_update() {
+test_dashboard_update() {
     if [[ ! -d $dashboard_path ]]; then
         return 0
     fi
@@ -217,14 +220,14 @@ test_clash_dashboard_update() {
     fi
 }
 
-get_clash_dashboard() {
-    printf "downloading clash-dashboard ... \n"
+get_dashboard() {
+    printf "downloading dashboard ... \n"
     suffix="gh-pages"
-    url="${baseurl}/Dreamacro/clash-dashboard/archive/refs/heads/${suffix}.zip"
+    url="${baseurl}/${dashboard_repo}/archive/refs/heads/${suffix}.zip"
     archive_path="${dashboard_update_path}-${suffix}.zip"
     curl -#SL $url -o $archive_path
     if [[ $? ]]; then
-        printf "unpacking clash-dashboard ... "
+        printf "unpacking dashboard ... "
         unzip -qq $archive_path -d $update_dir
         if [[ $? ]]; then
             mv -f ${dashboard_update_path}-${suffix} $dashboard_update_path
@@ -238,9 +241,9 @@ get_clash_dashboard() {
     fi
 }
 
-update_clash_dashboard() {
+update_dashboard() {
     if [[ -d $dashboard_update_path ]]; then
-        printf "updating clash-dashboard ... "
+        printf "updating dashboard ... "
         mv -f $dashboard_update_path $config_dir
         if [[ $? ]]; then
             printf "success\n"
@@ -300,10 +303,10 @@ update() {
         printf "alreay up to date\n"
     fi
 
-    printf "checking clash-dashboard update ... "
-    if [[ test_clash_dashboard_update ]]; then
+    printf "checking dashboard update ... "
+    if [[ test_dashboard_update ]]; then
         printf "success\n"
-        get_clash_dashboard
+        get_dashboard
     else
         printf "alreay up to date\n"
     fi
@@ -319,7 +322,7 @@ update() {
     if [[ test_downloaded_update ]]; then
         stop_clash
         update_clash
-        update_clash_dashboard
+        update_dashboard
         update_geoip
     fi
 }
