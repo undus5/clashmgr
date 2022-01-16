@@ -294,13 +294,15 @@ update_dashboard() {
     fi
 }
 
-test_geoip_update_path() {
+test_geoip_update() {
     if [[ ! -f $geoip_path ]]; then
         return 0
     fi
     current_version_datetime=$(date -r $geoip_path)
-    url="https://api.github.com/repos/Dreamacro/maxmind-geoip/releases/latest"
-    latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.published_at')")
+    # url="https://api.github.com/repos/Dreamacro/maxmind-geoip/releases/latest"
+    # latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.published_at')")
+    url="https://api.github.com/repos/Hackl0us/GeoIP2-CN/branches/release"
+    latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.commit.commit.author.date')")
     if [[ $current_version_datetime < $latest_version_datetime ]]; then
         return 0
     else
@@ -310,7 +312,8 @@ test_geoip_update_path() {
 
 get_geoip() {
     printf "downloading geoip ... \n"
-    url="${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
+    # url="${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
+    url="${baseurl}/Hackl0us/GeoIP2-CN/raw/release/${geoip_name}"
     curl -#SL $url -o $geoip_update_path_path
 }
 
@@ -355,7 +358,7 @@ update() {
     fi
 
     printf "checking geoip update ... "
-    if [[ test_geoip_update_path ]]; then
+    if [[ test_geoip_update ]]; then
         printf "success\n"
         get_geoip
     else

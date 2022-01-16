@@ -239,15 +239,18 @@ function Test-Geoip-Update {
         Return $true
     }
     $current_version_datetime = Get-ItemPropertyValue -Name LastWriteTime ${config_dir}\${geoip_name}
-    $url = "https://api.github.com/repos/Dreamacro/maxmind-geoip/releases/latest"
-    $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).published_at
+    # $url = "https://api.github.com/repos/Dreamacro/maxmind-geoip/releases/latest"
+    # $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).published_at
+    $url = "https://api.github.com/repos/Hackl0us/GeoIP2-CN/branches/release"
+    $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).commit.commit.author.date
     $lt = $($current_version_datetime -lt $latest_version_datetime)
     return $lt
 }
 
 function Get-Geoip {
     Write-Host "downloading geoip ... "
-    $url = "${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
+    # $url = "${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
+    $url = "${baseurl}/Hackl0us/GeoIP2-CN/raw/release/${geoip_name}"
     curl -#SL $url -o $geoip_update_path
 }
 
@@ -266,7 +269,7 @@ function Test-Downloaded-Update {
 }
 
 function Update {
-    Write-Host "checking clash update ... "
+    Write-Host "checking clash update ... " -NoNewline
     $latest_version = Test-Clash-Update
     if ($latest_version) {
         Write-Host "success"
