@@ -287,6 +287,7 @@ get_dashboard() {
 update_dashboard() {
     if [[ -d $dashboard_update_path ]]; then
         printf "updating dashboard ... "
+        rm -rf $dashboard_path
         mv -f $dashboard_update_path $config_dir
         if [[ $? ]]; then
             printf "success\n"
