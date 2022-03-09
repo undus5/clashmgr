@@ -2,7 +2,7 @@
 
 clash command-line management tool
 
-suitable for both Linux and Windows
+platform: Linux, Windows (need PowerShell 7)
 
 ## Usage
 
