@@ -68,26 +68,41 @@ head() {
 
 # baseurl="https://github.com"
 baseurl="https://download.fastgit.org"
+api_baseurl="https://api.github.com/repos"
 
 # script_dir=$(dirname $(realpath $0))
 config_dir=~/.config/clashc
 update_dir=${config_dir}/update
 
-process_name="clash-linux-amd64"
+process_name="clash-linux-amd64-v3"
 
-program_path=${config_dir}/${process_name}
-program_update_path=${update_dir}/${process_name}
+clash_path=${config_dir}/${process_name}
+clash_update_path=${update_dir}/${process_name}
 
-# dashboard_name="clash-dashboard"
-# dashboard_repo="Dreamacro/clash-dashboard"
+clash_repo="Dreamacro/clash"
+# clash_release_url="${api_baseurl}/${clash_repo}/releases/tags/premium"
+clash_release_url="${api_baseurl}/${clash_repo}/releases/latest"
+
+dashboard_name="clash-dashboard"
+dashboard_owner="Dreamacro"
 dashboard_name="yacd"
-dashboard_repo="haishanh/yacd"
+dashboard_owner="haishanh"
+
+dashboard_repo="${dashboard_owner}/${dashboard_name}"
+dashboard_repo_branch="gh-pages"
 dashboard_path=${config_dir}/${dashboard_name}
 dashboard_update_path=${update_dir}/${dashboard_name}
 
 geoip_name="Country.mmdb"
 geoip_path=${config_dir}/${geoip_name}
 geoip_update_path_path=${update_dir}/${geoip_name}
+
+# geoip_repo="Dreamacro/maxmind-geoip"
+# geoip_release_url="${api_baseurl}/${geoip_repo}/releases/latest"
+# geoip_download_url="${baseurl}/${geoip_repo}/releases/latest/download/${geoip_name}"
+geoip_repo="Hackl0us/GeoIP2-CN"
+geoip_release_url="${api_baseurl}/${geoip_repo}/branches/release"
+geoip_download_url="${baseurl}/${geoip_repo}/raw/release/${geoip_name}"
 
 if [[ -d $update_dir ]]; then
     rm -rf $update_dir
@@ -106,19 +121,20 @@ get_help() {
     printf "Clash command-line management tool\n\n"
     printf "Syntax: clashc [start|stop|status|update|set|get]\n"
     printf "Options:\n"
-    printf "%3s %-20s %s\n" "" "start" "start clash service"
-    printf "%3s %-20s %s\n" "" "stop" "stop clash service"
-    printf "%3s %-20s %s\n" "" "status" "check clash service status"
-    printf "%3s %-20s %s\n" "" "update" "update clash, dashboard, geoip database"
-    printf "%3s %-20s %s\n" "" "set [example.yaml]" "apply config file to clash service"
-    printf "%3s %-20s %s\n" "" "get [example.txt]" "update config subscription"
-    printf "%3s %-20s %s\n" "" "" "the content of example.txt is your subscription url"
+    format="%3s %-20s %s\n"
+    printf $format "" "start" "start clash service"
+    printf $format "" "stop" "stop clash service"
+    printf $format "" "status" "check clash service status"
+    printf $format "" "update" "update clash, dashboard, geoip database"
+    printf $format "" "set [example.yaml]" "apply config file to clash service"
+    printf $format "" "get [example.txt]" "update config subscription"
+    printf $format "" "" "the content of example.txt is your subscription url"
 }
 
 start_clash() {
     pid=$(pidof $process_name)
     if [ -z $pid ]; then
-        bkr $program_path -d $config_dir
+        bkr $clash_path -d $config_dir
     else
         echo "already running"
     fi
@@ -204,13 +220,21 @@ set_config() {
 }
 
 test_clash_update() {
-    url="https://api.github.com/repos/Dreamacro/clash/releases/tags/premium"
-    latest_version=$(lstrip "$(trim_quotes "$(curl -sSL $url | jq '.name')")" "Premium ")
-    if [[ ! -f $program_path ]]; then
+    url=$clash_release_url
+    release_name=$(curl -sSL $url | jq '.name')
+
+    if [[ $release_name != v* ]]; then
+        latest_version=$(lstrip "$(trim_quotes $release_name)" "Premium ")
+    else
+        latest_version=$release_name
+    fi
+
+    if [[ ! -f $clash_path ]]; then
         echo $latest_version
         return 0
     fi
-    current_version=$(lstrip "$($program_path -v)" "Clash ")
+
+    current_version=$(lstrip "$($clash_path -v)" "Clash ")
     if [[ $current_version == $latest_version ]]; then
         return 1
     else
@@ -220,13 +244,22 @@ test_clash_update() {
 
 get_clash() {
     printf "downloading clash ... \n"
+
     archive_name="${process_name}-${latest_version}.gz"
     archive_path=${update_dir}/${archive_name}
-    url="${baseurl}/Dreamacro/clash/releases/download/premium/${archive_name}"
+
+    if [[ $release_name != v* ]]; then
+        tag="premium"
+    else
+        tag=$latest_version
+    fi
+
+    url="${baseurl}/${clash_repo}/releases/download/${tag}/${archive_name}"
     curl -#SL $url -o $archive_path
+
     if [[ $? ]]; then
         printf "unpacking clash ... "
-        gzip -dc $archive_path > $program_update_path
+        gzip -dc $archive_path > $clash_update_path
         if [[ $? ]]; then
             rm $archive_path
             printf "success\n"
@@ -239,10 +272,10 @@ get_clash() {
 }
 
 update_clash() {
-    if [[ -f $program_update_path ]]; then
+    if [[ -f $clash_update_path ]]; then
         printf "updating clash ... "
-        mv -f $program_update_path $config_dir
-        chmod u+x $program_path
+        mv -f $clash_update_path $config_dir
+        chmod u+x $clash_path
         if [[ $? ]]; then
             printf "success\n"
         fi
@@ -254,8 +287,8 @@ test_dashboard_update() {
         return 0
     fi
     current_version_datetime=$(date -r $dashboard_path)
-    url="https://api.github.com/repos/Dreamacro/clash/commits"
-    latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.[0].commit.author.date')")
+    url="${api_baseurl}/${dashboard_repo}/branches/${dashboard_repo_branch}"
+    latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.commit.commit.committer.date')")
     if [[ $current_version_datetime < $latest_version_datetime ]]; then
         return 0
     else
@@ -265,15 +298,15 @@ test_dashboard_update() {
 
 get_dashboard() {
     printf "downloading dashboard ... \n"
-    suffix="gh-pages"
-    url="${baseurl}/${dashboard_repo}/archive/refs/heads/${suffix}.zip"
-    archive_path="${dashboard_update_path}-${suffix}.zip"
+    dashboard_repo_branch="gh-pages"
+    url="${baseurl}/${dashboard_repo}/archive/refs/heads/${dashboard_repo_branch}.zip"
+    archive_path="${dashboard_update_path}-${dashboard_repo_branch}.zip"
     curl -#SL $url -o $archive_path
     if [[ $? ]]; then
         printf "unpacking dashboard ... "
         unzip -qq $archive_path -d $update_dir
         if [[ $? ]]; then
-            mv -f ${dashboard_update_path}-${suffix} $dashboard_update_path
+            mv -f ${dashboard_update_path}-${dashboard_repo_branch} $dashboard_update_path
             rm $archive_path
             printf "success\n"
         else
@@ -300,10 +333,13 @@ test_geoip_update() {
         return 0
     fi
     current_version_datetime=$(date -r $geoip_path)
-    # url="https://api.github.com/repos/Dreamacro/maxmind-geoip/releases/latest"
-    # latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.published_at')")
-    url="https://api.github.com/repos/Hackl0us/GeoIP2-CN/branches/release"
-    latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.commit.commit.author.date')")
+    url=$geoip_release_url
+    release_info=$(curl -sSL $url)
+    if [[ $url == *branches* ]]; then
+        latest_version_datetime=$(trim_quotes "$(echo $release_info | jq '.commit.commit.committer.date')")
+    else
+        latest_version_datetime=$(trim_quotes "$(echo $release_info | jq '.published_at')")
+    fi
     if [[ $current_version_datetime < $latest_version_datetime ]]; then
         return 0
     else
@@ -313,8 +349,7 @@ test_geoip_update() {
 
 get_geoip() {
     printf "downloading geoip ... \n"
-    # url="${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
-    url="${baseurl}/Hackl0us/GeoIP2-CN/raw/release/${geoip_name}"
+    url=$geoip_download_url
     curl -#SL $url -o $geoip_update_path_path
 }
 
@@ -329,7 +364,7 @@ update_geoip() {
 }
 
 test_downloaded_update() {
-    if [[ -f $program_update_path ]] || [[ -d $dashboard_update_path ]] || [[ -f $geoip_update_path_path ]]; then
+    if [[ -f $clash_update_path ]] || [[ -d $dashboard_update_path ]] || [[ -f $geoip_update_path_path ]]; then
         return 0
     else
         return 1
@@ -405,7 +440,7 @@ get_config() {
 
 case $1 in
     "start")
-        if [[ ! -f $program_path ]]; then
+        if [[ ! -f $clash_path ]]; then
             update
         fi
         start_clash

@@ -7,26 +7,41 @@ if ( !(Test-Path $config_dir_raw) ) {
 
 # $baseurl = "https://github.com"
 $baseurl = "https://download.fastgit.org"
+$api_baseurl = "https://api.github.com/repos"
 
 # $script_dir = $MyInvocation.MyCommand.Path | Split-Path -Parent
 $config_dir = Resolve-Path $config_dir_raw
 $update_dir = "${config_dir}\update"
 
-$process_name = "clash-windows-amd64"
+$process_name = "clash-windows-amd64-v3"
 
-$program_path = "${config_dir}\${process_name}.exe"
-$program_update_path = "${update_dir}\${process_name}.exe"
+$clash_path = "${config_dir}\${process_name}.exe"
+$clash_update_path = "${update_dir}\${process_name}.exe"
 
-# $dashboard_name = "clash-dashboard"
-# $dashboard_repo = "Dreamacro/clash-dashboard"
-$dashboard_name = "yacd"
-$dashboard_repo = "haishanh/yacd"
+$clash_repo = "Dreamacro/clash"
+# $clash_release_url = "${api_baseurl}/${clash_repo}/releases/tags/premium"
+$clash_release_url = "${api_baseurl}/${clash_repo}/releases/latest"
+
+$dashboard_name = "clash-dashboard"
+$dashboard_owner = "Dreamacro"
+# $dashboard_name = "yacd"
+# $dashboard_owner = "haishanh"
+
+$dashboard_repo = "${dashboard_owner}/${dashboard_name}"
+$dashboard_repo_branch = "gh-pages"
 $dashboard_path = "${config_dir}\${dashboard_name}"
 $dashboard_update_path = "${update_dir}\${dashboard_name}"
 
 $geoip_name = "Country.mmdb"
 $geoip_path = "${config_dir}\${geoip_name}"
 $geoip_update_path = "${update_dir}\${geoip_name}"
+
+# $geoip_repo = "Dreamacro/maxmind-geoip"
+# $geoip_release_url = "${api_baseurl}/${geoip_repo}/releases/latest"
+# $geoip_download_url = "${baseurl}/${geoip_repo}/releases/latest/download/${geoip_name}"
+$geoip_repo = "Hackl0us/GeoIP2-CN"
+$geoip_release_url = "${api_baseurl}/${geoip_repo}/branches/release"
+$geoip_download_url = "${baseurl}/${geoip_repo}/raw/release/${geoip_name}"
 
 if (Test-Path $update_dir) {
     Remove-Item -Recurse $update_dir
@@ -44,13 +59,14 @@ function Get-Help {
     "Clash command-line management tool`n"
     "Syntax: clashc [start|stop|status|update|set|get]"
     "Options:"
-    "{0, 3} {1, -20} {2}" -f "", "start", "start clash service"
-    "{0, 3} {1, -20} {2}" -f "", "stop", "stop clash service"
-    "{0, 3} {1, -20} {2}" -f "", "status", "check clash service status"
-    "{0, 3} {1, -20} {2}" -f "", "update", "update clash, dashboard, geoip database"
-    "{0, 3} {1, -20} {2}" -f "", "set [example.yaml]", "apply config file to clash service"
-    "{0, 3} {1, -20} {2}" -f "", "get [example.txt]", "update config subscription"
-    "{0, 3} {1, -20} {2}" -f "", "", "the content of example.txt is your subscription url"
+    $format = "{0, 3} {1, -20} {2}"
+    $format -f "", "start", "start clash service"
+    $format -f "", "stop", "stop clash service"
+    $format -f "", "status", "check clash service status"
+    $format -f "", "update", "update clash, dashboard, geoip database"
+    $format -f "", "set [example.yaml]", "apply config file to clash service"
+    $format -f "", "get [example.txt]", "update config subscription"
+    $format -f "", "", "the content of example.txt is your subscription url"
 }
 
 function Start-Clash {
@@ -58,7 +74,7 @@ function Start-Clash {
     if ($?) {
         Write-Host "already running"
     } else {
-        & $program_path -d $config_dir
+        & $clash_path -d $config_dir
     }
 }
 
@@ -138,14 +154,19 @@ function Set-Config {
 }
 
 function Test-Clash-Update {
-    $url = "https://api.github.com/repos/Dreamacro/clash/releases/tags/premium"
-    $latest_version = $(-split $(curl -sSL $url | ConvertFrom-Json).name)[1]
+    $url = $clash_release_url
+    $release_name = $(curl -sSL $url | ConvertFrom-Json).name
 
-    if ( !(Test-Path $program_path) ) {
+    if (!$release_name.StartsWith("v")) {
+        $latest_version = $(-split $release_name)[1]
+    } else {
+        $latest_version = $release_name
+    }
+    if ( !(Test-Path $clash_path) ) {
         Return $latest_version
     }
 
-    $current_version = $(-split $(& $program_path -v))[1]
+    $current_version = $(-split $(& $clash_path -v))[1]
     $is_latest = $current_version -eq $latest_version
 
     if ($is_latest) {
@@ -164,7 +185,14 @@ function Get-Clash {
 
     $archive_name = "${process_name}-${latest_version}.zip"
     $archive_path = "${update_dir}\${archive_name}"
-    $url = "${baseurl}/Dreamacro/clash/releases/download/premium/${archive_name}"
+
+    if (!$latest_version.StartsWith("v")) {
+        $tag = "premium"
+    } else {
+        $tag = $latest_version
+    }
+
+    $url = "${baseurl}/${clash_repo}/releases/download/${tag}/${archive_name}"
     curl -#SL $url -o $archive_path
 
     if ($?) {
@@ -182,9 +210,9 @@ function Get-Clash {
 }
 
 function Update-Clash {
-    if (Test-Path $program_update_path) {
+    if (Test-Path $clash_update_path) {
         Write-Host "updating clash ... " -NoNewline
-        Move-Item $program_update_path $config_dir -Force
+        Move-Item $clash_update_path $config_dir -Force
         if ($?) {
             Write-Host "success"
         }
@@ -196,23 +224,23 @@ function Test-Dashboard-Update {
         Return $true
     }
     $current_version_datetime = Get-ItemPropertyValue -Name LastWriteTime ${config_dir}\${dashboard_name}
-    $url = "https://api.github.com/repos/Dreamacro/clash/commits"
-    $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).commit[0].author.date
+    $url = "${api_baseurl}/${dashboard_repo}/branches/${dashboard_repo_branch}"
+    $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).commit.commit.committer.date
     $lt = $($current_version_datetime -lt $latest_version_datetime)
     return $lt
 }
 
 function Get-Dashboard {
     Write-Host "downloading dashboard ... "
-    $suffix = "gh-pages"
-    $url = "${baseurl}/${dashboard_repo}/archive/refs/heads/${suffix}.zip"
-    $archive_path = "${dashboard_update_path}-${suffix}.zip"
+    $dashboard_repo_branch = "gh-pages"
+    $url = "${baseurl}/${dashboard_repo}/archive/refs/heads/${dashboard_repo_branch}.zip"
+    $archive_path = "${dashboard_update_path}-${dashboard_repo_branch}.zip"
     curl -#SL $url -o $archive_path
     if ($?) {
         Write-Host "unpacking dashboard ... " -NoNewline
         Expand-Archive -Path $archive_path -DestinationPath $update_dir
         if ($?) {
-            Move-Item "${dashboard_update_path}-${suffix}" $dashboard_update_path
+            Move-Item "${dashboard_update_path}-${dashboard_repo_branch}" $dashboard_update_path
             Remove-Item $archive_path
             Write-Host "success"
         } else {
@@ -239,18 +267,20 @@ function Test-Geoip-Update {
         Return $true
     }
     $current_version_datetime = Get-ItemPropertyValue -Name LastWriteTime ${config_dir}\${geoip_name}
-    # $url = "https://api.github.com/repos/Dreamacro/maxmind-geoip/releases/latest"
-    # $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).published_at
-    $url = "https://api.github.com/repos/Hackl0us/GeoIP2-CN/branches/release"
-    $latest_version_datetime = $(curl -sSL $url | ConvertFrom-Json).commit.commit.author.date
+    $url = $geoip_release_url
+    $release_info = $(curl -sSL $url | ConvertFrom-Json)
+    if ($url.Contains("branches")) {
+        $latest_version_datetime = $release_info.commit.commit.committer.date
+    } else {
+        $latest_version_datetime = $release_info.published_at
+    }
     $lt = $($current_version_datetime -lt $latest_version_datetime)
     return $lt
 }
 
 function Get-Geoip {
     Write-Host "downloading geoip ... "
-    # $url = "${baseurl}/Dreamacro/maxmind-geoip/releases/latest/download/${geoip_name}"
-    $url = "${baseurl}/Hackl0us/GeoIP2-CN/raw/release/${geoip_name}"
+    $url = $geoip_download_url
     curl -#SL $url -o $geoip_update_path
 }
 
@@ -265,7 +295,7 @@ function Update-Geoip {
 }
 
 function Test-Downloaded-Update {
-    Return ( (Test-Path $program_update_path) -or (Test-Path $dashboard_update_path) -or (Test-Path $geoip_update_path) )
+    Return ( (Test-Path $clash_update_path) -or (Test-Path $dashboard_update_path) -or (Test-Path $geoip_update_path) )
 }
 
 function Update {
@@ -336,7 +366,7 @@ function Get-Config {
 
 switch ($args[0]) {
     "start" {
-        if ( !(Test-Path $program_path) ) {
+        if ( !(Test-Path $clash_path) ) {
             Update
         }
         Start-Clash
