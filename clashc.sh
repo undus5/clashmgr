@@ -67,7 +67,7 @@ head() {
 }
 
 # baseurl="https://github.com"
-baseurl="https://download.fastgit.org"
+baseurl="https://ghproxy.com/https://github.com"
 api_baseurl="https://api.github.com/repos"
 
 # script_dir=$(dirname $(realpath $0))

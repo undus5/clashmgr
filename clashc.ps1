@@ -6,7 +6,7 @@ if ( !(Test-Path $config_dir_raw) ) {
 }
 
 # $baseurl = "https://github.com"
-$baseurl = "https://download.fastgit.org"
+$baseurl = "https://ghproxy.com/https://github.com"
 $api_baseurl = "https://api.github.com/repos"
 
 # $script_dir = $MyInvocation.MyCommand.Path | Split-Path -Parent
