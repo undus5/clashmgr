@@ -85,8 +85,8 @@ clash_release_url="${api_baseurl}/${clash_repo}/releases/latest"
 
 dashboard_name="clash-dashboard"
 dashboard_owner="Dreamacro"
-dashboard_name="yacd"
-dashboard_owner="haishanh"
+# dashboard_name="yacd"
+# dashboard_owner="haishanh"
 
 dashboard_repo="${dashboard_owner}/${dashboard_name}"
 dashboard_repo_branch="gh-pages"
@@ -122,13 +122,13 @@ get_help() {
     printf "Syntax: clashc [start|stop|status|update|set|get]\n"
     printf "Options:\n"
     format="%3s %-20s %s\n"
-    printf $format "" "start" "start clash service"
-    printf $format "" "stop" "stop clash service"
-    printf $format "" "status" "check clash service status"
-    printf $format "" "update" "update clash, dashboard, geoip database"
-    printf $format "" "set [example.yaml]" "apply config file to clash service"
-    printf $format "" "get [example.txt]" "update config subscription"
-    printf $format "" "" "the content of example.txt is your subscription url"
+    printf "$format" "" "start" "start clash service"
+    printf "$format" "" "stop" "stop clash service"
+    printf "$format" "" "status" "check clash service status"
+    printf "$format" "" "update" "update clash, dashboard, geoip database"
+    printf "$format" "" "set [example.yaml]" "apply config file to clash service"
+    printf "$format" "" "get [example.txt]" "update config subscription"
+    printf "$format" "" "" "the content of example.txt is your subscription url"
 }
 
 start_clash() {
