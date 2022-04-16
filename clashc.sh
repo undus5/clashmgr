@@ -74,7 +74,8 @@ api_baseurl="https://api.github.com/repos"
 config_dir=~/.config/clashc
 update_dir=${config_dir}/update
 
-process_name="clash-linux-amd64-v3"
+process_name_base="clash-linux-amd64"
+process_name="${process_name_base}-v3"
 
 clash_path=${config_dir}/${process_name}
 clash_update_path=${update_dir}/${process_name}
@@ -442,9 +443,6 @@ get_config() {
 }
 
 case $1 in
-    "test")
-        test_geoip_update
-    ;;
     "start")
         if [[ ! -f $clash_path ]]; then
             update
@@ -461,6 +459,9 @@ case $1 in
         set_config $2
     ;;
     "update")
+        if [[ $2 == v1 ]]; then
+            process_name=$process_name_base
+        fi
         update
     ;;
     "get")
