@@ -234,7 +234,7 @@ test_clash_update() {
         return 0
     fi
 
-    current_version=$(lstrip "$($clash_path -v)" "Clash ")
+    current_version=$($clash_path -v | awk '{print $2}')
     if [[ $current_version == $latest_version ]]; then
         return 1
     else
@@ -248,18 +248,19 @@ get_clash() {
     archive_name="${process_name}-${latest_version}.gz"
     archive_path=${update_dir}/${archive_name}
 
-    if [[ $release_name != v* ]]; then
+    if [[ $latest_version != v* ]]; then
         tag="premium"
     else
         tag=$latest_version
     fi
 
     url="${baseurl}/${clash_repo}/releases/download/${tag}/${archive_name}"
+    echo $url
     curl -#SL $url -o $archive_path
 
     if [[ $? ]]; then
         printf "unpacking clash ... "
-        gzip -dc $archive_path > $clash_update_path
+        gzip -dc < $archive_path > $clash_update_path
         if [[ $? ]]; then
             rm $archive_path
             printf "success\n"
@@ -286,9 +287,10 @@ test_dashboard_update() {
     if [[ ! -d $dashboard_path ]]; then
         return 0
     fi
-    current_version_datetime=$(date -r $dashboard_path)
+    current_version_datetime=$(date -r $dashboard_path +%s)
     url="${api_baseurl}/${dashboard_repo}/branches/${dashboard_repo_branch}"
     latest_version_datetime=$(trim_quotes "$(curl -sSL $url | jq '.commit.commit.committer.date')")
+    latest_version_datetime=$(date -d $latest_version_datetime +%s)
     if [[ $current_version_datetime < $latest_version_datetime ]]; then
         return 0
     else
@@ -332,7 +334,7 @@ test_geoip_update() {
     if [[ ! -f $geoip_path ]]; then
         return 0
     fi
-    current_version_datetime=$(date -r $geoip_path)
+    current_version_datetime=$(date -r $geoip_path +%s)
     url=$geoip_release_url
     release_info=$(curl -sSL $url)
     if [[ $url == *branches* ]]; then
@@ -340,6 +342,7 @@ test_geoip_update() {
     else
         latest_version_datetime=$(trim_quotes "$(echo $release_info | jq '.published_at')")
     fi
+    latest_version_datetime=$(date -d $latest_version_datetime +%s)
     if [[ $current_version_datetime < $latest_version_datetime ]]; then
         return 0
     else
@@ -386,7 +389,7 @@ update() {
     fi
 
     printf "checking dashboard update ... "
-    if [[ test_dashboard_update ]]; then
+    if test_dashboard_update; then
         printf "success\n"
         get_dashboard
     else
@@ -394,14 +397,14 @@ update() {
     fi
 
     printf "checking geoip update ... "
-    if [[ test_geoip_update ]]; then
+    if test_geoip_update; then
         printf "success\n"
         get_geoip
     else
         printf "alreay up to date\n"
     fi
 
-    if [[ test_downloaded_update ]]; then
+    if test_downloaded_update; then
         stop_clash
         update_clash
         update_dashboard
@@ -439,6 +442,9 @@ get_config() {
 }
 
 case $1 in
+    "test")
+        test_geoip_update
+    ;;
     "start")
         if [[ ! -f $clash_path ]]; then
             update
