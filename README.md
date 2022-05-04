@@ -49,8 +49,8 @@ With these two methods, you are still not allowed to close the terminal window a
 The recommanded way is register clash as a system service using [NSSM](http://nssm.cc/)
 
 ```
-nssm install clashc
-# Path: C:\ClashcRuntime\clashc.ps1
+nssm install Clashc
+# Path: C:\ClashcRuntime\clash-windows-amd64-v3.exe
 # Startup directory: C:\ClashcRuntime
 # Arguments: -d C:\ClashcRuntime
 ```
