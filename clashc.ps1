@@ -1,6 +1,6 @@
 # powershell
 
-$config_dir_raw = "~\.config\clashc"
+$config_dir_raw = "C:\ClashcRuntime"
 if ( !(Test-Path $config_dir_raw) ) {
     New-Item -Path $config_dir_raw -ItemType Directory | Out-Null
 }
