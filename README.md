@@ -1,31 +1,39 @@
-# clashc
+# Clashc
 
-clash command-line management tool
+Clash command-line management tool
 
-platform: Linux, Windows (need PowerShell 7)
+Platform: Linux, Windows (require PowerShell 7)
 
-## Usage
+## Installation
 
-clone or download this project
+1. Clone or download this project
 
-[optional, recommended] add project directory to system path
+2. [Optional, Recommended] Add project directory to system PATH
+For Linux, you can create a symlink for clashc.sh to your PATH.
 
-run `clashc update` to initialize clash, it will download clash program and it's dependencies into `~/.config/clash`
-you can use this command to update all stuff in the future
+3. Run `clashc update` to initialize clash, it will download clash program and it's dependencies into a runtime directory.
+For Linux, it's in `~/.config/clash`.
+For Windows, it's in `C:\ClashcRuntime`.
+You can use this command to update all stuff in the future.
 
-[optional] download config subscription from your service provider, if you have one
-```bash
-echo "https://subscription_url" > ./subscription.txt
-clashc get ./subscription.txt
-```
-it will download config file alongside that txt with same basename, like ./subscription.yaml
-you can use this `clashc get sub.txt` to update your subscription in the future
+4. [Optional] Download config subscription from your service provider, if you have one
 
-[optional] edit ~/.config/clash/config.yaml to tweak basic configuration if needed
+    ```bash
+    echo "https://subscription_url" > ./subscription.txt
+    clashc get ./subscription.txt
+    ```
 
-start service via `clashc start`
-for linux, it will start in background normally
-for powershell, it can only start in foreground, we need do some extra work:
+    It will download config file alongside that txt with same basename, like `./subscription.yaml`.
+    You can use this `clashc get sub.txt` to update your subscription in the future.
+
+5. [Optional] Edit `config.yaml` in the runtime directory to tweak basic configuration if needed.
+
+## Running Service
+
+Start service via `clashc start`.
+For linux, it will start in background normally
+For powershell, it can only start in foreground, so we need do some extra work:
+
 ```powershell
 # method one
 Start-Job -ScriptBlock { clashc start }
@@ -36,9 +44,21 @@ Write-Output "function Clashc-Start { Start-Job -ScriptBlock { clashc start } }"
 clashc-start
 ```
 
-apply your own config to clash service
+With these two methods, you are still not allowed to close the terminal window after starting, so it's not recommanded.
+
+The recommanded way is register clash as a system service using [NSSM](http://nssm.cc/)
+
+```
+nssm install clashc
+# Path: C:\ClashcRuntime\clashc.ps1
+# Startup directory: C:\ClashcRuntime
+# Arguments: -d C:\ClashcRuntime
+```
+
+Apply config file to clash service
+
 ```bash
 clashc set ./subscription.yaml
 ```
 
-now you can access 127.0.0.1:9090/ui in your browser to manage proxies via clash-dashboard and use the service
+Now you can access http://localhost:9090/ui through your browser to manage proxies via clash-dashboard and use the service
