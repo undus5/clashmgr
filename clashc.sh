@@ -71,7 +71,7 @@ baseurl="https://ghproxy.com/https://github.com"
 api_baseurl="https://api.github.com/repos"
 
 # script_dir=$(dirname $(realpath $0))
-config_dir=~/.config/clashc
+config_dir=~/.clashc_runtime
 update_dir=${config_dir}/update
 
 process_name_base="clash-linux-amd64"
