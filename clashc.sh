@@ -138,6 +138,7 @@ start_clash() {
         bkr $clash_path -d $config_dir
     else
         echo "already running"
+        exit 1
     fi
 }
 
@@ -187,23 +188,23 @@ set_config() {
     pid=$(pidof $process_name)
     if [ -z $pid ]; then
         echo "clash not running"
-        return 1
+        exit 1
     fi
 
     external_controller=$(get_external_controller)
 
     if [[ -z $external_controller ]]; then
         echo "no 'external-controller' attribute in ${config_dir}/config.yaml"
-        return 1
+        exit 1
     fi
 
     if [[ -z $1 ]]; then
         get_help
-        return 1
+        exit 1
     fi
     if [[ ! -f $1 ]]; then
         echo "$1 not exists"
-        return 1
+        exit 1
     fi
 
     config_path=$(realpath $1)
@@ -416,11 +417,11 @@ update() {
 get_config() {
     if [[ -z $1 ]]; then
         get_help
-        return 1
+        exit 1
     fi
     if [[ ! -f $1 ]]; then
         echo "$1 not exists"
-        return 1
+        exit 1
     fi
 
     abs_path=$(realpath $1)
@@ -439,6 +440,7 @@ get_config() {
         fi
     else
         printf "invalid url\n"
+        exit 1
     fi
 }
 
@@ -469,5 +471,6 @@ case $1 in
     ;;
     *)
         get_help
+        exit 1
     ;;
 esac
