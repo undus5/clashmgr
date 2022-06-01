@@ -357,7 +357,7 @@ function Get-Config {
         curl -sSL $url -o $target_path
         if ($?) {
             Write-Host "success"
-            Write-Host "save as ${target_path}"
+            Write-Host "saved as ${target_path}"
         }
     } else {
         Write-Host "invalid url"

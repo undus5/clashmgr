@@ -74,7 +74,7 @@ api_baseurl="https://api.github.com/repos"
 config_dir=~/.clashc_runtime
 update_dir=${config_dir}/update
 
-process_name_base="clash-linux-amd64"
+process_name_base="clash-linux-amd64-v3"
 process_name="${process_name_base}"
 
 clash_path=${config_dir}/${process_name}
@@ -436,7 +436,7 @@ get_config() {
         curl -sSL $url -o $target_path
         if [[ $? ]]; then
             printf "success\n"
-            printf "save as ${target_path}\n"
+            printf "saved as ${target_path}\n"
         fi
     else
         printf "invalid url\n"
