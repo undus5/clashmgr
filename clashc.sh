@@ -208,14 +208,12 @@ set_config() {
     fi
 
     config_path=$(realpath $1)
-    printf "setting ${config_path} ... "
     data="{\"path\":\"${config_path}\"}"
     header="Content-Type:application/json"
     url="${external_controller}/configs"
     status=$(curl -sSL -X PUT $url -H $header --data-raw $data -w "%{http_code}")
 
     if [[ $? && $status == "204" ]]; then
-        printf "success\n"
     else
         printf "error: $status\n"
     fi
