@@ -213,8 +213,7 @@ set_config() {
     url="${external_controller}/configs"
     status=$(curl -sSL -X PUT $url -H $header --data-raw $data -w "%{http_code}")
 
-    if [[ $? && $status == "204" ]]; then
-    else
+    if [[ $? != 0 || $status != "204" ]]; then
         printf "error: $status\n"
     fi
 }
@@ -304,10 +303,10 @@ get_dashboard() {
     url="${baseurl}/${dashboard_repo}/archive/refs/heads/${dashboard_repo_branch}.zip"
     archive_path="${dashboard_update_path}-${dashboard_repo_branch}.zip"
     curl -#SL $url -o $archive_path
-    if [[ $? ]]; then
+    if [[ $? == 0 ]]; then
         printf "unpacking dashboard ... "
         unzip -qq $archive_path -d $update_dir
-        if [[ $? ]]; then
+        if [[ $? == 0 ]]; then
             mv -f ${dashboard_update_path}-${dashboard_repo_branch} $dashboard_update_path
             rm $archive_path
             printf "success\n"
@@ -324,7 +323,7 @@ update_dashboard() {
         printf "updating dashboard ... "
         rm -rf $dashboard_path
         mv -f $dashboard_update_path $config_dir
-        if [[ $? ]]; then
+        if [[ $? == 0 ]]; then
             printf "success\n"
         fi
     fi
@@ -360,7 +359,7 @@ update_geoip() {
     if [[ -f $geoip_update_path_path ]]; then
         printf "updating geoip ... "
         mv -f $geoip_update_path_path $config_dir
-        if [[ $? ]]; then
+        if [[ $? == 0 ]]; then
             printf "success\n"
         fi
     fi
@@ -432,7 +431,7 @@ get_config() {
     if [[ $url == http* ]]; then
         printf "downloading config ... "
         curl -sSL $url -o $target_path
-        if [[ $? ]]; then
+        if [[ $? == 0 ]]; then
             printf "success\n"
             printf "saved as ${target_path}\n"
         fi
