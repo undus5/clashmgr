@@ -423,8 +423,15 @@ get_config() {
 
     abs_path=$(realpath $1)
     basename=$(basename $abs_path .txt)
-    target_dir=$(dirname $abs_path)
-    target_path=${target_dir}/${basename}.yaml
+
+    # target_dir=$(dirname $abs_path)
+    # target_path=${target_dir}/${basename}.yaml
+    if [[ -z "$2" ]]; then
+        target_path="${basename}.yaml"
+    else
+        target_path=$2
+    fi
+
     url=$(head 1 $abs_path)
     url=$(strip_all "$url" "[[:space:]]")
 
@@ -464,7 +471,8 @@ case $1 in
         update
     ;;
     "get")
-        get_config $2
+        shift
+        get_config $@
     ;;
     *)
         get_help
