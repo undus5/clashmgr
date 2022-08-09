@@ -57,15 +57,15 @@ if ( !(Test-Path $config_path) ) {
 
 function Get-Help {
     "Clash command-line management tool`n"
-    "Syntax: clashc [start|stop|status|update|set|get]"
+    "Usage: clashc <start|stop|status|update|set|get>"
     "Options:"
     $format = "{0, 3} {1, -20} {2}"
     $format -f "", "start", "start clash service"
     $format -f "", "stop", "stop clash service"
     $format -f "", "status", "check clash service status"
     $format -f "", "update", "update clash, dashboard, geoip database"
-    $format -f "", "set [example.yaml]", "apply config file to clash service"
-    $format -f "", "get [example.txt]", "update config subscription"
+    $format -f "", "set <example.yaml>", "apply config file to clash service"
+    $format -f "", "get <example.txt>", "update config subscription"
     $format -f "", "", "the content of example.txt is your subscription url"
 }
 

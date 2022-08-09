@@ -120,15 +120,15 @@ fi
 
 get_help() {
     printf "Clash command-line management tool\n\n"
-    printf "Syntax: clashc [start|stop|status|update|set|get]\n"
+    printf "Usage: clashc <start|stop|status|update|set|get>\n"
     printf "Options:\n"
     format="%3s %-20s %s\n"
     printf "$format" "" "start" "start clash service"
     printf "$format" "" "stop" "stop clash service"
     printf "$format" "" "status" "check clash service status"
     printf "$format" "" "update" "update clash, dashboard, geoip database"
-    printf "$format" "" "set [example.yaml]" "apply config file to clash service"
-    printf "$format" "" "get [example.txt]" "update config subscription"
+    printf "$format" "" "set <example.yaml>" "apply config file to clash service"
+    printf "$format" "" "get <example.txt>" "update config subscription"
     printf "$format" "" "" "the content of example.txt is your subscription url"
 }
 
