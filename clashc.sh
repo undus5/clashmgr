@@ -70,8 +70,11 @@ head() {
 baseurl="https://ghproxy.com/https://github.com"
 api_baseurl="https://api.github.com/repos"
 
-# script_dir=$(dirname $(realpath $0))
-config_dir=~/.clashc_runtime
+script_dir=$(dirname $(realpath $0))
+config_dir=${script_dir}/runtime
+if [[ ! -d $config_dir ]]; then
+    mkdir $config_dir
+fi
 update_dir=${config_dir}/update
 
 process_name_base="clash-linux-amd64-v3"

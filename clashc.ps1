@@ -1,16 +1,14 @@
 # powershell
 
-$config_dir_raw = "C:\ClashcRuntime"
-if ( !(Test-Path $config_dir_raw) ) {
-    New-Item -Path $config_dir_raw -ItemType Directory | Out-Null
-}
-
 # $baseurl = "https://github.com"
 $baseurl = "https://ghproxy.com/https://github.com"
 $api_baseurl = "https://api.github.com/repos"
 
-# $script_dir = $MyInvocation.MyCommand.Path | Split-Path -Parent
-$config_dir = Resolve-Path $config_dir_raw
+$script_dir = $MyInvocation.MyCommand.Path | Split-Path -Parent
+$config_dir = "${config_dir}\runtime"
+if ( !(Test-Path $config_dir) ) {
+    New-Item -Path $config_dir -ItemType Directory | Out-Null
+}
 $update_dir = "${config_dir}\update"
 
 $process_name = "clash-windows-amd64-v3"
