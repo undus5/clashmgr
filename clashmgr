@@ -66,6 +66,8 @@ head() {
     printf '%s\n' "${line[@]}"
 }
 
+program_name=$(basename $0)
+
 # baseurl="https://github.com"
 baseurl="https://ghproxy.com/https://github.com"
 api_baseurl="https://api.github.com/repos"
@@ -123,7 +125,7 @@ fi
 
 get_help() {
     printf "Clash command-line management tool\n\n"
-    printf "Usage: clashc <start|stop|status|update|set|get>\n"
+    printf "Usage: ${program_name} <start|stop|status|update|set|get>\n"
     printf "Options:\n"
     format="%3s %-20s %s\n"
     printf "$format" "" "start" "start clash service"

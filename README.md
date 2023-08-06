@@ -1,6 +1,6 @@
-# Clashc
+# Clash Manager CLI
 
-Clash command-line management tool
+Clash service management tool
 
 Platform: Linux, Windows (PowerShell 7)
 
@@ -9,25 +9,25 @@ Platform: Linux, Windows (PowerShell 7)
 1. Clone or download this project
 
 2. [Optional, Recommended] Add project directory to system PATH
-For Linux, you can create a symlink for clashc.sh to your PATH.
+For Linux, you can create a symlink for `clashmgr` to your PATH.
 
-3. [Optional] Run `clashc update` to update runtime files.
+3. [Optional] Run `clashmgr update` to update runtime files.
 
 4. [Optional] Download config subscription from your service provider, if you have one:
 
     ```bash
     echo "https://subscription_url" > ./subscription.txt
-    clashc get ./subscription.txt
+    clashmgr get ./subscription.txt
     ```
 
     It will download config file alongside that txt with same basename, like `./subscription.yaml`.
-    You can use this `clashc get sub.txt` to update your subscription in the future.
+    You can use this `clashmgr get sub.txt` to update your subscription in the future.
 
 5. [Optional] Edit `config.yaml` in the runtime directory for tweaking basic configuration if needed.
 
 ## Running Service
 
-Start clash service via `clashc start`.
+Start clash service via `clashmgr start`.
 
 For Linux, it will start in background normally.
 
@@ -36,19 +36,19 @@ For Windows, it can only start in foreground, there's two way to run clash servi
 Method 1 [Recommanded]: Register clash as a system service using [NSSM](http://nssm.cc/)
 
 ```
-nssm install Clashc
-# Path: C:\clashc\clash-windows-amd64-v3.exe
-# Startup directory: C:\clashc\runtime
-# Arguments: -d C:\clashc\runtime
+nssm install Clashmgr
+# Path: C:\clashmgr\clash-windows-amd64-v3.exe
+# Startup directory: C:\clashmgr\runtime
+# Arguments: -d C:\clashmgr\runtime
 ```
 
 Method 2: Create a Powershell function to start clash service:
 
 ```powershell
 # execute the follow command
-Write-Output "function Clashc-Start { Start-Job -ScriptBlock { clashc start } }" >> $profile
+Write-Output "function Clashmgr-Start { Start-Job -ScriptBlock { clashmgr start } }" >> $profile
 # then reopen PowerShell window and run:
-clashc-start
+clashmgr-start
 ```
 
 With this method, if you close the terminal window, clash service will be closed too, so it's not recommanded.
@@ -56,7 +56,7 @@ With this method, if you close the terminal window, clash service will be closed
 After launching the clash service, apply your config file to the clash service
 
 ```bash
-clashc set ./subscription.yaml
+clashmgr set ./subscription.yaml
 ```
 
 Now you can access http://localhost:9090/ui via your browser to manage proxies.

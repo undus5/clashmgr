@@ -1,5 +1,7 @@
 # powershell
 
+$program_name = Split-Path $MyInvocation.MyCommand.Path -LeafBase
+
 # $baseurl = "https://github.com"
 $baseurl = "https://ghproxy.com/https://github.com"
 $api_baseurl = "https://api.github.com/repos"
@@ -55,7 +57,7 @@ if ( !(Test-Path $config_path) ) {
 
 function Get-Help {
     "Clash command-line management tool`n"
-    "Usage: clashc <start|stop|status|update|set|get>"
+    "Usage: ${process_name} <start|stop|status|update|set|get>"
     "Options:"
     $format = "{0, 3} {1, -20} {2}"
     $format -f "", "start", "start clash service"
