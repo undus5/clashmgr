@@ -36,7 +36,7 @@ For Windows, it can only start in foreground, there's two way to run clash servi
 Method 1 [Recommanded]: Register clash as a system service using [NSSM](http://nssm.cc/)
 
 ```
-nssm install Clashmgr
+nssm install ClashService
 # Path: C:\clashmgr\clash-windows-amd64-v3.exe
 # Startup directory: C:\clashmgr\runtime
 # Arguments: -d C:\clashmgr\runtime
@@ -60,4 +60,3 @@ clashmgr set ./subscription.yaml
 ```
 
 Now you can access http://localhost:9090/ui via your browser to manage proxies.
-
