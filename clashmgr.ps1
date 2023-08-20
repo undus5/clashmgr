@@ -2,18 +2,14 @@
 
 $program_name = Split-Path $MyInvocation.MyCommand.Path -LeafBase
 
-# $baseurl = "https://github.com"
-$baseurl = "https://ghproxy.com/https://github.com"
+$baseurl = "https://github.com"
+# $baseurl = "https://ghproxy.com/https://github.com"
 $api_baseurl = "https://api.github.com/repos"
 
 $script_dir = $MyInvocation.MyCommand.Path | Split-Path -Parent
 $update_dir = "${runtime_dir}\updates"
 
 $runtime_old_dir = "${script_dir}\runtime_old"
-if ( Test-Path $runtime_old_dir ) {
-    "'runtime_old' exists, remove first."
-    Return $false
-}
 
 $runtime_dir = "${script_dir}\runtime"
 if ( !(Test-Path $runtime_dir) ) {
@@ -43,12 +39,12 @@ $geoip_name = "Country.mmdb"
 $geoip_path = "${runtime_dir}\${geoip_name}"
 $geoip_update_path = "${update_dir}\${geoip_name}"
 
-# $geoip_repo = "Dreamacro/maxmind-geoip"
-# $geoip_release_url = "${api_baseurl}/${geoip_repo}/releases/latest"
-# $geoip_download_url = "${baseurl}/${geoip_repo}/releases/latest/download/${geoip_name}"
-$geoip_repo = "Hackl0us/GeoIP2-CN"
-$geoip_release_url = "${api_baseurl}/${geoip_repo}/branches/release"
-$geoip_download_url = "${baseurl}/${geoip_repo}/raw/release/${geoip_name}"
+$geoip_repo = "Dreamacro/maxmind-geoip"
+$geoip_release_url = "${api_baseurl}/${geoip_repo}/releases/latest"
+$geoip_download_url = "${baseurl}/${geoip_repo}/releases/latest/download/${geoip_name}"
+# $geoip_repo = "Hackl0us/GeoIP2-CN"
+# $geoip_release_url = "${api_baseurl}/${geoip_repo}/branches/release"
+# $geoip_download_url = "${baseurl}/${geoip_repo}/raw/release/${geoip_name}"
 
 if (Test-Path $update_dir) {
     Remove-Item -Recurse $update_dir
@@ -305,32 +301,42 @@ function Test-Downloaded-Update {
     Return ( (Test-Path $clash_update_path) -or (Test-Path $dashboard_update_path) -or (Test-Path $geoip_update_path) )
 }
 
+function Make-Backup {
+    Copy-Item -Path $runtime_dir -Destination $runtime_old_dir -Recurse
+}
+
 function Update {
+    if ( Test-Path $runtime_old_dir ) {
+        Write-Host "'runtime_old' exists, remove first."
+        Return $false
+    }
+
     Write-Host "checking clash update ... " -NoNewline
     $latest_version = Test-Clash-Update
     if ($latest_version) {
         Write-Host "success"
         Get-Clash $latest_version
     } else {
-        Write-Host "already up to date"
+        Write-Host "is up to date"
     }
 
     Write-Host "checking dashboard update ... " -NoNewline
     if (Test-Dashboard-Update) {
         Get-Dashboard
     } else {
-        Write-Host "already up to date"
+        Write-Host "is up to date"
     }
 
     Write-Host "checking geoip update ... " -NoNewline
     if (Test-Geoip-Update) {
         Get-Geoip
     } else {
-        Write-Host "already up to date"
+        Write-Host "is up to date"
     }
 
     if (Test-Downloaded-Update) {
         Stop-Clash
+        Make-Backup
         Update-Clash
         Update-Dashboard
         Update-Geoip
