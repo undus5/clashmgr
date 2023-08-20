@@ -68,21 +68,23 @@ head() {
 
 program_name=$(basename $0)
 
-# baseurl="https://github.com"
-baseurl="https://ghproxy.com/https://github.com"
+baseurl="https://github.com"
 api_baseurl="https://api.github.com/repos"
 
 script_dir=$(dirname $(realpath $0))
-config_dir=${script_dir}/runtime
-if [[ ! -d $config_dir ]]; then
-    mkdir $config_dir
+update_dir=${script_dir}/updates
+
+runtime_old_dir=${script_dir}/runtime_old
+
+runtime_dir=${script_dir}/runtime
+if [[ ! -d $runtime_dir ]]; then
+    mkdir $runtime_dir
 fi
-update_dir=${config_dir}/update
 
 process_name_base="clash-linux-amd64-v3"
 process_name="${process_name_base}"
 
-clash_path=${config_dir}/${process_name}
+clash_path=${runtime_dir}/${process_name}
 clash_update_path=${update_dir}/${process_name}
 
 clash_repo="Dreamacro/clash"
@@ -96,26 +98,26 @@ dashboard_owner="Dreamacro"
 
 dashboard_repo="${dashboard_owner}/${dashboard_name}"
 dashboard_repo_branch="gh-pages"
-dashboard_path=${config_dir}/${dashboard_name}
+dashboard_path=${runtime_dir}/${dashboard_name}
 dashboard_update_path=${update_dir}/${dashboard_name}
 
 geoip_name="Country.mmdb"
-geoip_path=${config_dir}/${geoip_name}
+geoip_path=${runtime_dir}/${geoip_name}
 geoip_update_path_path=${update_dir}/${geoip_name}
 
-# geoip_repo="Dreamacro/maxmind-geoip"
-# geoip_release_url="${api_baseurl}/${geoip_repo}/releases/latest"
-# geoip_download_url="${baseurl}/${geoip_repo}/releases/latest/download/${geoip_name}"
-geoip_repo="Hackl0us/GeoIP2-CN"
-geoip_release_url="${api_baseurl}/${geoip_repo}/branches/release"
-geoip_download_url="${baseurl}/${geoip_repo}/raw/release/${geoip_name}"
+geoip_repo="Dreamacro/maxmind-geoip"
+geoip_release_url="${api_baseurl}/${geoip_repo}/releases/latest"
+geoip_download_url="${baseurl}/${geoip_repo}/releases/latest/download/${geoip_name}"
+# geoip_repo="Hackl0us/GeoIP2-CN"
+# geoip_release_url="${api_baseurl}/${geoip_repo}/branches/release"
+# geoip_download_url="${baseurl}/${geoip_repo}/raw/release/${geoip_name}"
 
 if [[ -d $update_dir ]]; then
     rm -rf $update_dir
 fi
 mkdir -p $update_dir
 
-config_path=${config_dir}/config.yaml
+config_path=${runtime_dir}/config.yaml
 
 if [[ ! -f $config_path ]]; then
     echo "mixed-port: 7890" >> $config_path
@@ -140,7 +142,7 @@ get_help() {
 start_clash() {
     pid=$(pidof $process_name)
     if [ -z $pid ]; then
-        bkr $clash_path -d $config_dir
+        bkr $clash_path -d $runtime_dir
     else
         echo "already running"
         exit 1
@@ -161,7 +163,7 @@ get_external_controller() {
         if [[ $line == ${pattern}* ]]; then
             external_controller=$(lstrip "$line" "$pattern")
         fi
-    done < ${config_dir}/config.yaml
+    done < ${runtime_dir}/config.yaml
 
     if [[ -n $external_controller ]]; then
         echo $external_controller
@@ -181,7 +183,7 @@ get_status() {
     external_controller=$(get_external_controller)
 
     if [[ -z $external_controller ]]; then
-        echo "no 'external-controller' attribute in ${config_dir}/config.yaml"
+        echo "no 'external-controller' attribute in ${runtime_dir}/config.yaml"
         return 1
     fi
 
@@ -199,7 +201,7 @@ set_config() {
     external_controller=$(get_external_controller)
 
     if [[ -z $external_controller ]]; then
-        echo "no 'external-controller' attribute in ${config_dir}/config.yaml"
+        echo "no 'external-controller' attribute in ${runtime_dir}/config.yaml"
         exit 1
     fi
 
@@ -279,7 +281,7 @@ get_clash() {
 update_clash() {
     if [[ -f $clash_update_path ]]; then
         printf "updating clash ... "
-        mv -f $clash_update_path $config_dir
+        mv -f $clash_update_path $runtime_dir
         chmod u+x $clash_path
         if [[ $? ]]; then
             printf "success\n"
@@ -327,7 +329,7 @@ update_dashboard() {
     if [[ -d $dashboard_update_path ]]; then
         printf "updating dashboard ... "
         rm -rf $dashboard_path
-        mv -f $dashboard_update_path $config_dir
+        mv -f $dashboard_update_path $runtime_dir
         if [[ $? == 0 ]]; then
             printf "success\n"
         fi
@@ -363,7 +365,7 @@ get_geoip() {
 update_geoip() {
     if [[ -f $geoip_update_path_path ]]; then
         printf "updating geoip ... "
-        mv -f $geoip_update_path_path $config_dir
+        mv -f $geoip_update_path_path $runtime_dir
         if [[ $? == 0 ]]; then
             printf "success\n"
         fi
@@ -378,10 +380,19 @@ test_downloaded_update() {
     fi
 }
 
+make_backup() {
+    cp -r $runtime_dir $runtime_old_dir
+}
+
 update() {
     test_command jq
     test_command gzip
     test_command unzip
+
+    if [[ -d $runtime_old_dir ]]; then
+        echo "'runtime_old' exists, remove first."
+        exit 1
+    fi
 
     printf "checking clash update ... "
     latest_version=$(test_clash_update)
@@ -389,7 +400,7 @@ update() {
         printf "success\n"
         get_clash
     else
-        printf "alreay up to date\n"
+        printf "is up to date\n"
     fi
 
     printf "checking dashboard update ... "
@@ -397,7 +408,7 @@ update() {
         printf "success\n"
         get_dashboard
     else
-        printf "alreay up to date\n"
+        printf "is up to date\n"
     fi
 
     printf "checking geoip update ... "
@@ -405,11 +416,12 @@ update() {
         printf "success\n"
         get_geoip
     else
-        printf "alreay up to date\n"
+        printf "is up to date\n"
     fi
 
     if test_downloaded_update; then
         stop_clash
+        make_backup
         update_clash
         update_dashboard
         update_geoip
