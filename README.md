@@ -1,4 +1,4 @@
-# Clash Manager CLI
+# Clashmgr
 
 Clash service management tool
 
@@ -59,4 +59,5 @@ After launching the clash service, apply your config file to the clash service
 clashmgr set ./subscription.yaml
 ```
 
-Now you can access http://localhost:9090/ui via your browser to manage proxies.
+Now you can access http://localhost:9090/ui/ via your browser to manage proxies.
+
