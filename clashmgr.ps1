@@ -70,6 +70,8 @@ function Get-Help {
     $format -f "", "set <example.yaml>", "apply config file to clash service"
     $format -f "", "get <example.txt>", "update config subscription"
     $format -f "", "", "the content of example.txt is your subscription url"
+    "ENV:"
+    $format -f "", "CLASH_CONF", "config file path environment variable"
 }
 
 function Start-Clash {
