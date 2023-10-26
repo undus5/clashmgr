@@ -76,8 +76,13 @@ function Start-Clash {
     Get-Process -Name $process_name > $null 2>&1
     if ($?) {
         Write-Host "already running"
-    } else {
-        & $clash_path -d $runtime_dir
+        Break
+    }
+    & $clash_path -d $runtime_dir
+    $CLASH_CONF = Get-Item Env:CLASH_CONF -ErrorAction SilentlyContinue
+    if ($CLASH_CONF) {
+        Start-Sleep -Seconds 1
+        Set-Config $CLASH_CONF
     }
 }
 
@@ -386,6 +391,10 @@ switch ($args[0]) {
     }
     "stop" {
         Stop-Clash
+    }
+    { "restart", "reload" -contains $_ } {
+        Stop-Clash
+        Start-Clash
     }
     "status" {
         Get-Status
