@@ -77,7 +77,6 @@ function Get-Help {
 function Start-Clash {
     Get-Process -Name $process_name > $null 2>&1
     if ($?) {
-        Write-Host "already running"
         Break
     }
     & $clash_path -d $runtime_dir

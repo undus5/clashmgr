@@ -144,7 +144,6 @@ get_help() {
 start_clash() {
     pid=$(pidof $process_name)
     if [[ -n $pid ]]; then
-        echo "already running"
         exit 1
     fi
     bkr $clash_path -d $runtime_dir
