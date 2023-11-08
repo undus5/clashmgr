@@ -144,7 +144,7 @@ get_help() {
 start_clash() {
     pid=$(pidof $process_name)
     if [[ -n $pid ]]; then
-        exit 1
+        exit 0
     fi
     bkr $clash_path -d $runtime_dir
     if [[ -n $CLASH_CONF ]]; then
